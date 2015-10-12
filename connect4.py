@@ -1,4 +1,5 @@
 import sys
+import numpy
 
 BOARD_SIZE_X = 7
 BOARD_SIZE_Y = 6
@@ -48,17 +49,19 @@ def minimax(gameState, depth, player, opponent):
     return bestMove, bestScore
 
 def evaluateScore(gameState, player, opponent):
-    score = 0
+    score = checkWin(gameState)
+
+    if score == player:
+        return float("inf")
+    elif score == opponent:
+        return float("-inf")
+    else:
+        score = 0
 
     for i in range(0, BOARD_SIZE_Y):
         for j in range(0, BOARD_SIZE_X):
             if gameState[i][j] == 0:
-                score_temp = scoreOfCoordinate(gameState, i, j, player, opponent)
-
-                if score_temp == float("inf") or score_temp == float("-inf"):
-                    return score_temp
-                else:
-                    score += score_temp
+                score += scoreOfCoordinate(gameState, i, j, player, opponent)
 
     return score
 
@@ -79,10 +82,8 @@ def scoreOfCoordinate(gameState, i, j, player, opponent):
                      player=player,
                      opponent=opponent
                  )
-    if score_temp == float("inf") or score_temp == float("-inf"):
-        return score_temp
-    else:
-        score += score_temp
+
+    score += score_temp
 
     # Check horizontal line
     score_temp = scoreOfLine(
@@ -98,10 +99,8 @@ def scoreOfCoordinate(gameState, i, j, player, opponent):
                      player=player,
                      opponent=opponent
                  )
-    if score_temp == float("inf") or score_temp == float("-inf"):
-        return score_temp
-    else:
-        score += score_temp
+
+    score += score_temp
 
     # Check diagonal /
     score_temp = scoreOfLine(
@@ -117,10 +116,8 @@ def scoreOfCoordinate(gameState, i, j, player, opponent):
                      player=player,
                      opponent=opponent
                  )
-    if score_temp == float("inf") or score_temp == float("-inf"):
-        return score_temp
-    else:
-        score += score_temp
+
+    score += score_temp
 
     # Check diagonal \
     score_temp = scoreOfLine(
@@ -136,10 +133,8 @@ def scoreOfCoordinate(gameState, i, j, player, opponent):
                      player=player,
                      opponent=opponent
                  )
-    if score_temp == float("inf") or score_temp == float("-inf"):
-        return score_temp
-    else:
-        score += score_temp
+
+    score += score_temp
 
     return score
 
@@ -190,22 +185,16 @@ def scoreOfLine(
         if firstLoop:
             firstLoop = False
             if currentInLine != gameState[row][column]:
-                currentInLine = gameState[row][column]
                 if valsInARow == 3 and currentInLine == player:
                     score += 1
-                    valsInARow = 0
-                    break
-                elif valsInARow >= 4 and currentInLine == player:
-                    return float("inf")
                 elif valsInARow == 3 and currentInLine == opponent:
                     score -= 1
-                    valsInARow = 0
-                    break
-                elif valsInARow >= 4 and currentInLine == opponent:
-                    return float("-inf")
+
             else:
                 valsInARowPrev = valsInARow
-                valsInARow = 0
+
+            valsInARow = 0
+            currentInLine = gameState[row][column]
 
         if currentInLine == gameState[row][column]:
             valsInARow += 1
@@ -213,24 +202,6 @@ def scoreOfLine(
             break
         row -= rowIncrement
         column -= columnIncrement
-
-    if valsInARowPrev:
-        if (valsInARow >= 4 or
-            valsInARowPrev >= 4 and
-            currentInLine == player
-        ):
-            return float("inf")
-        elif (valsInARow >= 4 or
-            valsInARowPrev >= 4 and
-            currentInLine == opponent
-        ):
-            return float("-inf")
-
-    else:
-        if valsInARow >= 4 and currentInLine == player:
-            return float("inf")
-        elif valsInARow >= 4 and currentInLine == opponent:
-            return float("-inf")
 
     if valsInARow + valsInARowPrev >= 3 and currentInLine == player:
         score += 1
@@ -242,6 +213,90 @@ def scoreOfLine(
 def bestMove(gameState, player, opponent):
     move, score = minimax(gameState, SEARCH_DEPTH, player, opponent)
     return move[1]
+
+def checkWin(gameState):
+    current = 0
+    currentCount = 0
+
+    # Check horizontal wins
+    for i in range(0, BOARD_SIZE_Y):
+        for j in range(0, BOARD_SIZE_X):
+            if currentCount == 0:
+                if gameState[i][j] != 0:
+                    current = gameState[i][j]
+                    currentCount += 1
+            elif currentCount == 4:
+                return current
+            elif gameState[i][j] != current:
+                if gameState[i][j] != 0:
+                    current = gameState[i][j]
+                    currentCount = 1
+                else:
+                    current = 0
+                    currentCount = 0
+            else:
+                currentCount += 1
+
+        if currentCount == 4:
+            return current
+        current = 0
+        currentCount = 0
+
+    # Check vertical wins
+    for j in range(0, BOARD_SIZE_X):
+        for i in range(0, BOARD_SIZE_Y):
+            if currentCount == 0:
+                if gameState[i][j] != 0:
+                    current = gameState[i][j]
+                    currentCount += 1
+            elif currentCount == 4:
+                return current
+            elif gameState[i][j] != current:
+                if gameState[i][j] != 0:
+                    current = gameState[i][j]
+                    currentCount = 1
+                else:
+                    current = 0
+                    currentCount = 0
+            else:
+                currentCount += 1
+
+        if currentCount == 4:
+            return current
+        current = 0
+        currentCount = 0
+
+    # Check diagonal wins
+    np_matrix = numpy.array(gameState)
+    diags = [np_matrix[::-1,:].diagonal(i) for i in range(-np_matrix.shape[0]+1,np_matrix.shape[1])]
+    diags.extend(np_matrix.diagonal(i) for i in range(np_matrix.shape[1]-1,-np_matrix.shape[0],-1))
+    diags_list = [n.tolist() for n in diags]
+
+    for i in range(0, len(diags_list)):
+        if len(diags_list[i]) >= 4:
+            for j in range(0, len(diags_list[i])):
+                if currentCount == 0:
+                    if diags_list[i][j] != 0:
+                        current = diags_list[i][j]
+                        currentCount += 1
+                elif currentCount == 4:
+                    return current
+                elif diags_list[i][j] != current:
+                    if diags_list[i][j] != 0:
+                        current = diags_list[i][j]
+                        currentCount = 1
+                    else:
+                        current = 0
+                        currentCount = 0
+                else:
+                    currentCount += 1
+
+            if currentCount == 4:
+                return current
+            current = 0
+            currentCount = 0
+
+    return 0
 
 def printBoard(gameState):
     for i in range(1, BOARD_SIZE_X + 1):
@@ -275,9 +330,9 @@ def playGame():
     print "========================="
     print "= WELCOME TO CONNECT 4! ="
     print "=========================\n"
+    printBoard(gameState)
 
     while True:
-        printBoard(gameState)
 
         while True:
             move = int(input("What is your move? (Choose from 1 to %d)" % BOARD_SIZE_X))
@@ -301,29 +356,34 @@ def playGame():
         if gameOver:
             break
 
-        score = evaluateScore(gameState, player, opponent)
-        if score == float("inf"):
-            winner = COMPUTER_PLAYER
+        score = checkWin(gameState)
+        if score == player:
+            winner = player
             break
-        elif score == float("-inf"):
-            winner = HUMAN_PLAYER
+        elif score == opponent:
+            winner = opponent
             break
+        else:
+            score = 0
 
-        print "Now it's the computers turn!"
+        print "Now it's the computer's turn!"
         move = bestMove(gameState, player, opponent)
         if move == None:
             break
 
         moveHeights[move] += 1
         gameState[BOARD_SIZE_Y - moveHeights[move]][move] = player
+        printBoard(gameState)
 
-        score = evaluateScore(gameState, player, opponent)
-        if score == float("inf"):
-            winner = COMPUTER_PLAYER
+        score = checkWin(gameState)
+        if score == player:
+            winner = player
             break
-        elif score == float("-inf"):
-            winner = HUMAN_PLAYER
+        elif score == opponent:
+            winner = opponent
             break
+        else:
+            score = 0
 
     return winner
 
