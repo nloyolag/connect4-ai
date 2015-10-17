@@ -3,7 +3,7 @@ import numpy
 
 BOARD_SIZE_X = 7
 BOARD_SIZE_Y = 6
-SEARCH_DEPTH = 4
+SEARCH_DEPTH = 2
 
 COMPUTER_PLAYER = 1
 HUMAN_PLAYER = -1
@@ -374,7 +374,7 @@ def playGame():
     opponent = HUMAN_PLAYER
     winner = 0
     gameOver = False
-    remainingColumns = BOARD_SIZE_Y
+    remainingColumns = BOARD_SIZE_X
     print "========================="
     print "= WELCOME TO CONNECT 4! ="
     print "=========================\n"
@@ -383,7 +383,11 @@ def playGame():
     while True:
 
         while True:
-            move = int(input("What is your move? (Choose from 1 to %d)" % BOARD_SIZE_X))
+            try:
+                move = int(raw_input("What is your move? (Choose from 1 to %d)" % BOARD_SIZE_X))
+            except ValueError:
+                print "That wasn't a number! Try again."
+                continue
             if move < 1 or move > BOARD_SIZE_X:
                 print "That is not a valid move. Try again."
             elif moveHeights[move - 1] == BOARD_SIZE_Y:
@@ -457,7 +461,11 @@ if __name__ == "__main__":
             print "The board is full. This is a draw!"
 
         while True:
-            option = raw_input("Do you want to play again? (Y/N)")
+            try:
+                option = raw_input("Do you want to play again? (Y/N)")
+            except ValueError:
+                print "Please input a correct value. Try again."
+                continue
             if option == 'Y' or option == 'y':
                 break
             elif option == 'N' or option == 'n':
