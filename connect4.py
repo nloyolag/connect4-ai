@@ -38,6 +38,9 @@ def minimax(gameState, depth, player, opponent):
                 gameState[j][i] = player
                 currentMove[0] = j
                 break
+            elif j == BOARD_SIZE_Y - 2:
+                gameState[j+1][i] = player
+                currentMove[0] = j+1
 
         # Recursive minimax call, with reduced depth
         move, score = minimax(gameState, depth - 1, opponent, player)

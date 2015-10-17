@@ -85,6 +85,18 @@ class TestMinimax(unittest.TestCase):
         move = connect4.bestMove(gameState, self.player, self.opponent)
         self.assertEqual(move, 6)
 
+    def test_go_for_win(self):
+
+        gameState = [
+            [ 0, 0, 0, 0, 0, 0, 0],
+            [ 0, 0, 0, 0, 0, 0, 0],
+            [ 0, 0, 0, 0, 0, 0, 0],
+            [ 0, 1, 0, 0, 0, 0,-1],
+            [ 0, 1, 0, 0, 0, 0,-1],
+            [ 0, 1, 0, 0, 0,-1,-1]
+        ]
+        move = connect4.bestMove(gameState, self.player, self.opponent)
+        self.assertEqual(move, 1)
 
 if __name__ == "__main__":
     unittest.main()
