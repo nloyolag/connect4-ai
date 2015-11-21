@@ -1,6 +1,16 @@
 import unittest
 import connect4
 
+# FUncion para detectar victoria debe ser diferente a la que
+# evalue en minimax
+
+# La que evalua victoria solo analiza el tablero y regresa lo
+# primero que encuentra
+
+# Y la de minimax elige la victoria o derrota dependiendo de si es su turno
+# o no. Si tiene oportunidad de ganar y puede hacerlo, que lo haga. Si va
+# a perder inevitablemente, que lo detenga
+
 class TestHeuristic(unittest.TestCase):
 
     def setUp(self):

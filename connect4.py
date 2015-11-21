@@ -3,7 +3,7 @@ import numpy
 
 BOARD_SIZE_X = 7
 BOARD_SIZE_Y = 6
-SEARCH_DEPTH = 2
+SEARCH_DEPTH = 4
 
 COMPUTER_PLAYER = 1
 HUMAN_PLAYER = -1
@@ -20,7 +20,7 @@ def minimax(gameState, depth, player, opponent):
             availableMoves -= 1
 
     if depth == 0 or availableMoves == 0:
-        score = evaluateScore(gameState, COMPUTER_PLAYER, HUMAN_PLAYER)
+        score = evaluateScore(gameState, player, opponent)
         return None, score
 
     bestScore = None
@@ -238,10 +238,55 @@ def scoreOfLine(
 
 #
 # Method that executes the first call of the minimax method and
-# returns the move to be executed by the computer.
+# returns the move to be executed by the computer. It also verifies
+# if any immediate wins or loses are present.
 #
 
 def bestMove(gameState, player, opponent):
+    for i in range(0, BOARD_SIZE_X):
+        # If moves cannot be made on column, skip it
+        if gameState[0][i] != 0:
+            continue
+
+        currentMove = [0, i]
+
+        for j in range(0, BOARD_SIZE_Y - 1):
+            if gameState[j + 1][i] != 0:
+                gameState[j][i] = player
+                currentMove[0] = j
+                break
+            elif j == BOARD_SIZE_Y - 2:
+                gameState[j+1][i] = player
+                currentMove[0] = j+1
+
+        winner = checkWin(gameState)
+        gameState[currentMove[0]][currentMove[1]] = 0
+
+        if winner == COMPUTER_PLAYER:
+            return currentMove[1]
+
+    for i in range(0, BOARD_SIZE_X):
+        # If moves cannot be made on column, skip it
+        if gameState[0][i] != 0:
+            continue
+
+        currentMove = [0, i]
+
+        for j in range(0, BOARD_SIZE_Y - 1):
+            if gameState[j + 1][i] != 0:
+                gameState[j][i] = opponent
+                currentMove[0] = j
+                break
+            elif j == BOARD_SIZE_Y - 2:
+                gameState[j+1][i] = opponent
+                currentMove[0] = j+1
+
+        winner = checkWin(gameState)
+        gameState[currentMove[0]][currentMove[1]] = 0
+
+        if winner == HUMAN_PLAYER:
+            return currentMove[1]
+
     move, score = minimax(gameState, SEARCH_DEPTH, player, opponent)
     return move[1]
 
@@ -253,6 +298,8 @@ def bestMove(gameState, player, opponent):
 def checkWin(gameState):
     current = 0
     currentCount = 0
+    computer_wins = 0
+    opponent_wins = 0
 
     # Check horizontal wins
     for i in range(0, BOARD_SIZE_Y):
@@ -262,7 +309,12 @@ def checkWin(gameState):
                     current = gameState[i][j]
                     currentCount += 1
             elif currentCount == 4:
-                return current
+                if current == COMPUTER_PLAYER:
+                    computer_wins += 1
+                else:
+                    opponent_wins += 1
+                currentCount = 0
+                break
             elif gameState[i][j] != current:
                 if gameState[i][j] != 0:
                     current = gameState[i][j]
@@ -274,7 +326,10 @@ def checkWin(gameState):
                 currentCount += 1
 
         if currentCount == 4:
-            return current
+            if current == COMPUTER_PLAYER:
+                computer_wins += 1
+            else:
+                opponent_wins += 1
         current = 0
         currentCount = 0
 
@@ -286,7 +341,12 @@ def checkWin(gameState):
                     current = gameState[i][j]
                     currentCount += 1
             elif currentCount == 4:
-                return current
+                if current == COMPUTER_PLAYER:
+                    computer_wins += 1
+                else:
+                    opponent_wins += 1
+                currentCount = 0
+                break
             elif gameState[i][j] != current:
                 if gameState[i][j] != 0:
                     current = gameState[i][j]
@@ -298,7 +358,10 @@ def checkWin(gameState):
                 currentCount += 1
 
         if currentCount == 4:
-            return current
+            if current == COMPUTER_PLAYER:
+                computer_wins += 1
+            else:
+                opponent_wins += 1
         current = 0
         currentCount = 0
 
@@ -316,7 +379,12 @@ def checkWin(gameState):
                         current = diags_list[i][j]
                         currentCount += 1
                 elif currentCount == 4:
-                    return current
+                    if current == COMPUTER_PLAYER:
+                        computer_wins += 1
+                    else:
+                        opponent_wins += 1
+                    currentCount = 0
+                    break
                 elif diags_list[i][j] != current:
                     if diags_list[i][j] != 0:
                         current = diags_list[i][j]
@@ -328,11 +396,19 @@ def checkWin(gameState):
                     currentCount += 1
 
             if currentCount == 4:
-                return current
+                if current == COMPUTER_PLAYER:
+                    computer_wins += 1
+                else:
+                    opponent_wins += 1
             current = 0
             currentCount = 0
 
-    return 0
+    if opponent_wins > 0:
+        return HUMAN_PLAYER
+    elif computer_wins > 0:
+        return COMPUTER_PLAYER
+    else:
+        return 0
 
 #
 # Function that prints the game board, representing the player
