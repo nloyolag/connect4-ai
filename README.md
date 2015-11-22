@@ -19,5 +19,5 @@ To run the tests:
 python tests.py
 ```
 
-## Assignement Report
+## Assignment Report
 The report can be found in the repository as a PDF file.
